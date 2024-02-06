@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import ItemForm from "./ItemForm";
 import Filter from "./Filter";
 import Item from "./Item";
-
 function ShoppingList() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:4000/items")
+    fetch("http://localhost:3000/items")
       .then((r) => r.json())
       .then((items) => setItems(items));
   }, []);
- 
-  function handleUpdateItem(updatedItem) {
-    const updatedItems = items.map((item) => {
+
+  function handleUpdatedItem(updatedItem) {
+    let updatedItems = items.map((item) => {
       if (item.id === updatedItem.id) {
         return updatedItem;
       } else {
@@ -24,35 +24,45 @@ function ShoppingList() {
     setItems(updatedItems);
   }
 
+  function handleDeletedItem(deletedItem) {
+    const updatedItems = items.filter((item) => item.id !== deletedItem);
+    setItems(updatedItems);
+  }
 
   function handleAddItem(newItem) {
-    console.log("In ShoppingList:", newItem);
+    setItems([...items, newItem]);
   }
 
   function handleCategoryChange(category) {
     setSelectedCategory(category);
   }
-
   const itemsToDisplay = items.filter((item) => {
     if (selectedCategory === "All") return true;
-
     return item.category === selectedCategory;
   });
 
   return (
     <div className="ShoppingList">
       <ItemForm />
+      <ItemForm onAddItem={handleAddItem} />
       <Filter
         category={selectedCategory}
         onCategoryChange={handleCategoryChange}
       />
       <ul className="Items">
-        {itemsToDisplay.map((item) => (
-          <Item key={item.id} item={item} />
-        ))}
-      </ul>
+  {itemsToDisplay.map((item) => (
+    <React.Fragment key={item.id}>
+      <Item item={item} />
+      <Item
+        item={item}
+        onUpdateItem={handleUpdatedItem}
+        onDeleteItem={handleDeletedItem}
+      />
+    </React.Fragment>
+  ))}
+</ul>
+
     </div>
   );
 }
-
 export default ShoppingList;
